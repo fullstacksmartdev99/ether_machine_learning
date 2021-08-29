@@ -30,9 +30,14 @@ def back_test(data,settings,step):
 					correct_moves += 1
 				returns.append(profit_percentage)
 
-	response = {'total_percent_gain':total_percent_gain,'correct_moves':correct_moves,'moves':moves,
-				'correct_percentage':float(correct_moves/moves),'tenkan':settings['tenkan'],
-				'gain_per_trade':total_percent_gain / moves, 'sharpe':statistics.mean(returns) / statistics.stdev(returns)}
+	try:
+		response = {'total_percent_gain':total_percent_gain,'correct_moves':correct_moves,'moves':moves,
+					'correct_percentage':float(correct_moves/moves),'tenkan':settings['tenkan'],
+					'gain_per_trade':total_percent_gain / moves, 'sharpe':statistics.mean(returns) / statistics.stdev(returns)}
+	except:
+		response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
+					'correct_percentage':0,'tenkan':settings['tenkan'],
+					'gain_per_trade':0, 'sharpe':0}
 
 	return(response)
 
