@@ -2,6 +2,7 @@ import machine_learner
 import pandas as pd
 import tqdm
 import ichi_indicator
+import statistics
 
 df = pd.read_parquet('ETH-USDT.parquet')
 
