@@ -10,21 +10,20 @@ price_list = df['close'].tolist()
 
 taxes = 0.000
 data = price_list[:-1]
-data = price_list[-129600:-1]
+data = price_list[-43800:-1]
 
 # learned = machine_learner.learn(data,taxes,show_progress=True,backtest_step=1,step=1)
 
-analysis_depth = 10000
+analysis_depth = 3000
 # print(learned)
 
-recalculate_every = 60
+recalculate_every = 360
 need_to_recalculate = True
 recalculate_timer = 0
 
 
 current_strategy = {}
 current_position = {}
-owned = {}
 total_percent_gain = 0.0
 moves = 0
 correct_moves = 0
@@ -45,13 +44,18 @@ for i in tqdm.tqdm(range(analysis_depth,len(data))):
 	if current_position == {}:
 		sentiment = ichi_indicator.find_sentiment(data[i-analysis_depth:i],current_strategy['tenkan'])
 		if sentiment == current_strategy['sentiment']:
-			owned = {'i':i,'purchase_price':data[i]}
+			current_position = {'i':i,'purchase_price':data[i]}
+			print('bought')
+			print(current_position)
 			moves += 1
 	else:
 		if sentiment != current_strategy['sentiment']:
-			profit_percentage = (data[i] - owned['purchase_price'] - (data[i] * current_strategy['taxes'])) / owned['purchase_price']
+			print('sold')
+			print(data[i])
+
+			profit_percentage = (data[i] - current_position['purchase_price'] - (data[i] * current_strategy['taxes'])) / current_position['purchase_price']
 			total_percent_gain += profit_percentage
-			owned = {}
+			current_position = {}
 			if profit_percentage > 0:
 				correct_moves += 1
 			returns.append(profit_percentage)
