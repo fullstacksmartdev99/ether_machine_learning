@@ -10,7 +10,7 @@ price_list = df['close'].tolist()
 
 taxes = 0.000
 data = price_list[:-1]
-data = price_list[-43800:-1]
+data = price_list[-(60 * 24 * 365):-1]
 
 # learned = machine_learner.learn(data,taxes,show_progress=True,backtest_step=1,step=1)
 
@@ -70,30 +70,31 @@ def get_calculation(recalculate_every, analysis_depth):
 	return(response)
 
 
-recalculate_everys = []
-analysis_depths = []
-for i in range(1,10):
-	recalculate_everys.append(60*i)
-	analysis_depths.append(1000 * i)
+# recalculate_everys = []
+# analysis_depths = []
+# for i in range(1,10):
+# 	recalculate_everys.append(60*i)
+# 	analysis_depths.append(1000 * i)
 
-best_response = {'sharpe':0}
-best_settings = {'recalculate_every':0,'analysis_depth':0}
-
-
-iteration = 0
-for recalculate_every in recalculate_everys:
-	for analysis_depth in analysis_depths:
-		print('trying number ' + str(iteration) + ' out of ' + str(len(recalculate_everys) * len(analysis_depths)))
-		response = get_calculation(recalculate_every,analysis_depth)
-		if response['sharpe'] > best_response['sharpe']:
-			best_settings = {'recalculate_every':recalculate_every,'analysis_depth':analysis_depth}
-			best_response = response
-
-print(best_settings)
-print(best_response)
+# best_response = {'sharpe':0}
+# best_settings = {'recalculate_every':0,'analysis_depth':0}
 
 
+# iteration = 0
+# for recalculate_every in recalculate_everys:
+# 	for analysis_depth in analysis_depths:
+# 		print('trying number ' + str(iteration) + ' out of ' + str(len(recalculate_everys) * len(analysis_depths)))
+# 		response = get_calculation(recalculate_every,analysis_depth)
+# 		if response['sharpe'] > best_response['sharpe']:
+# 			best_settings = {'recalculate_every':recalculate_every,'analysis_depth':analysis_depth}
+# 			best_response = response
 
+# print(best_settings)
+# print(best_response)
+
+results = get_calculation(480,8000)
+
+print(results)
 
 
 
