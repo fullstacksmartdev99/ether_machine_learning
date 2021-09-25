@@ -3,6 +3,7 @@ import pandas as pd
 import tqdm
 import ichi_indicator
 import statistics
+import csv
 
 df = pd.read_parquet('ETH-USDT.parquet')
 
@@ -10,7 +11,7 @@ price_list = df['close'].tolist()
 
 taxes = 0.000
 data = price_list[:-1]
-data = price_list[-(60 * 24 * 365):-1]
+data = price_list[-(60 * 24 * 365 * 2):-1]
 
 # learned = machine_learner.learn(data,taxes,show_progress=True,backtest_step=1,step=1)
 
@@ -35,11 +36,15 @@ def get_calculation(recalculate_every, analysis_depth):
 				'gain_per_trade':0, 'sharpe':0}
 	returns = []
 
+	balance_history = []
+	balance = 1000000
+
 	for i in tqdm.tqdm(range(analysis_depth,len(data))):
 		if recalculate_timer > recalculate_every:
 			need_to_recalculate = True
 		if need_to_recalculate:
 			current_strategy = machine_learner.learn(data[i-analysis_depth:i],taxes,show_progress=True,backtest_step=1,step=1)
+			balance_history.append(balance)
 			need_to_recalculate = False
 			recalculate_timer = 0
 		recalculate_timer += 1
@@ -62,12 +67,13 @@ def get_calculation(recalculate_every, analysis_depth):
 				if profit_percentage > 0:
 					correct_moves += 1
 				returns.append(profit_percentage)
+				balance = balance * (1 + profit_percentage)
 		
 	response = {'total_percent_gain':total_percent_gain,'correct_moves':correct_moves,'moves':moves,
 				'correct_percentage':float(correct_moves/moves),
 				'gain_per_trade':total_percent_gain / moves, 'sharpe':statistics.mean(returns) / statistics.stdev(returns)}
 
-	return(response)
+	return(response,balance_history)
 
 
 # recalculate_everys = []
@@ -92,7 +98,11 @@ def get_calculation(recalculate_every, analysis_depth):
 # print(best_settings)
 # print(best_response)
 
-results = get_calculation(480,8000)
+results,balance_history = get_calculation(480,8000)
+
+with open('balance_history_ichimoku.csv', 'w', newline='') as myfile:
+     wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+     wr.writerow(mylist)
 
 print(results)
 
