@@ -6,7 +6,7 @@ import time
 
 df = pd.read_parquet('ETH-USDT.parquet')
 print(df)
-df = df.tail(200000)
+df = df.tail(100000)
 
 taxes = 0.000
 
@@ -21,7 +21,7 @@ data_interval = 60
 
 
 def find_best_interval():
-	starting_interval = 10
+	starting_interval = 20
 	ending_interval = 720
 	intervals = [starting_interval]
 	while intervals[-1] < ending_interval:
