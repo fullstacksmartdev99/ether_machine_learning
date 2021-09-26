@@ -29,7 +29,7 @@ def find_best_interval():
 
 
 	best_interval = 10
-	best_results = {}
+	best_results = {'sharpe':0}
 
 	for data_interval in tqdm.tqdm(intervals):
 		data_frame = df.iloc[::data_interval, :]
