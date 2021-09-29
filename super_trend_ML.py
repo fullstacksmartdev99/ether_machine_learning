@@ -6,7 +6,7 @@ import time
 
 df = pd.read_parquet('ETH-USDT.parquet')
 print(df)
-df = df.tail(100000)
+df = df.tail(365*24*60)
 
 taxes = 0.000
 
@@ -16,7 +16,7 @@ min_multiplier = 2
 max_multiplier = 5
 back_test_interval = 1
 
-data_interval = 60
+data_interval = 420
 
 
 
@@ -42,8 +42,21 @@ def find_best_interval():
 	print(best_results)
 	return(best_interval)
 
+def find_best_settings(depth):
+	data_frame = df.iloc[::depth, :]
+	print(f'finding best settings at {depth} depth')
+	best_settings, best_result = get_ml_supertrend.learn(data_frame,taxes,max_depth,max_settings_len1,min_multiplier,max_multiplier,back_test_interval,show_progress=True)
+	print(best_settings)
+	return([depth,best_settings])
 
-find_best_interval()
+depths = []
+best_settings = [5,10,30,60,120,360,420,700]
+for i in tqdm.tqdm(best_settings):
+	best_settings.append(find_best_settings(i))
+
+for i in best_settings:
+	print(i)
+
 
 # start = time.time()
 # best_settings, best_result = get_ml_supertrend.learn(df,taxes,max_depth,max_settings_len1,min_multiplier,max_multiplier,back_test_interval,show_progress=True)
