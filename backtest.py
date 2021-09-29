@@ -104,8 +104,8 @@ print(results)
 
 with open('balance_history_ichimoku.csv', 'w', newline='') as myfile:
 	wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-     for i in balance_history:
-     	wr.writerow(i)
+	for i in balance_history:
+		wr.writerow(i)
 
 
 
