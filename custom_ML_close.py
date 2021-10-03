@@ -54,6 +54,7 @@ def back_test(data,tax,back_test_interval):
 	total_percent_gain = 0.0
 	moves = 0
 	correct_moves = 0
+	max_len = 12 * 4 * 100
 	response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
 			'correct_percentage':float(0),
 			'gain_per_trade':0, 'sharpe':0}
@@ -64,19 +65,18 @@ def back_test(data,tax,back_test_interval):
 		current_test_set = data[i-(max_len):i]
 		try:
 			trend = check_side_interval(back_test_interval,current_test_set)
-
 			if current_position == {}:
 				if trend == 'up':
 					current_position = {'i':i,'purchase_price':price_list[i]}
-					#print('bought')
+					print('bought')
 					#print(price_list[i])
 					moves += 1
 			elif current_position != {}:
 				if trend == 'down':
-					profit_percentage = (price_list[i] - current_position['purchase_price'] - (price_list[i] * setting['taxes'])) / current_position['purchase_price']
+					profit_percentage = (price_list[i] - current_position['purchase_price'] - (price_list[i] * tax)) / current_position['purchase_price']
 					total_percent_gain += profit_percentage
 					current_position = {}
-					#print('sold')
+					print('sold')
 					#print(price_list[i])
 					if profit_percentage > 0:
 						correct_moves += 1
@@ -86,24 +86,32 @@ def back_test(data,tax,back_test_interval):
 
 	try:
 		response = {'total_percent_gain':total_percent_gain,'correct_moves':correct_moves,'moves':moves,
-					'correct_percentage':float(correct_moves/moves),'len1':len1, 'len2':len2,
+					'correct_percentage':float(correct_moves/moves),
 					'gain_per_trade':total_percent_gain / moves, 'sharpe':statistics.mean(returns) / statistics.stdev(returns)}
 	except:
 		response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
-				'correct_percentage':0, 'len1':len1, 'len2':len2,
+				'correct_percentage':0,
 				'gain_per_trade':0, 'sharpe':0}
 	return(response)
 
 
-def check_to_sell(current_data,tax=0.0):
-	back_test_interval = 420
-	result = back_test(data,tax,back_test_interval)
+def should_I_sell(current_data,tax=0.0):
+	signal = False
+	back_test_interval = 10
+	result = back_test(current_data,tax,back_test_interval)
 	return(result)
 
 
-def check_to_buy(buy_interval, current_data):
-	pass
+def should_I_buy(buy_interval, current_data):
+	trend = check_side_interval(420,current_data.tail(100000))
+	signal = False
+	if trend == 'up':
+		signal = True
+	return(signal)
 
-print(check_to_sell(df.tail(10000)))
+
+trend = check_side_interval(420,df.tail(100000))
+
+print(check_to_sell(df))
 
 
