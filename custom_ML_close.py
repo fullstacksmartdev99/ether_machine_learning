@@ -187,6 +187,7 @@ best = {'sharpe':0}
 
 for intervals_to_check in intervals_to_check_LIST:
 	test = full_backtest(df,0,5,intervals_to_check)
+	print(intervals_to_check)
 	print(test)
 	if test['sharpe'] > best['sharpe']:
 		best = test
