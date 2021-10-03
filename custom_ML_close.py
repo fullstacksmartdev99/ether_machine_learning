@@ -7,7 +7,7 @@ import supertrend
 
 df = pd.read_parquet('ETH-USDT.parquet')
 print(df)
-df = df.tail(365*24*60)
+#df = df.tail(365*24*60)
 
 taxes = 0.000
 
@@ -95,23 +95,93 @@ def back_test(data,tax,back_test_interval):
 	return(response)
 
 
-def should_I_sell(current_data,tax=0.0):
+def should_I_sell(current_data,tax=0.0,intervals_to_check=[420]):
 	signal = False
-	back_test_interval = 10
-	result = back_test(current_data,tax,back_test_interval)
-	return(result)
+	down = True
+	for i in intervals_to_check:
+		if down:
+			trend = check_side_interval(i,current_data)
+			if trend == 'up':
+				down = False
+	if down:
+		signal = True
 
+	# back_test_interval = 10
+	# result = back_test(current_data,tax,back_test_interval)
+	return(signal)
 
 def should_I_buy(buy_interval, current_data):
-	trend = check_side_interval(420,current_data.tail(100000))
+	trend = check_side_interval(buy_interval,current_data)
 	signal = False
 	if trend == 'up':
 		signal = True
 	return(signal)
 
+def full_backtest(data,tax,back_test_interval,intervals_to_check):
+	current_position = {}
+	total_percent_gain = 0.0
+	moves = 0
+	correct_moves = 0
+	max_len = 12 * 4 * 100
+	response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
+			'correct_percentage':float(0),
+			'gain_per_trade':0, 'sharpe':0}
+	returns = []
 
-trend = check_side_interval(420,df.tail(100000))
+	price_list = data['open'].tolist()
+	for i in tqdm.tqdm(range(max_len,len(data),back_test_interval)):
+		current_test_set = data[i-(max_len):i]
+		try:
+			if current_position == {}:
+				if should_I_buy(420,current_test_set):
+					current_position = {'i':i,'purchase_price':price_list[i]}
+					# print('bought')
+					#print(price_list[i])
+					moves += 1
+			elif current_position != {}:
+				if should_I_sell(current_test_set,0.0,intervals_to_check):
+					profit_percentage = (price_list[i] - current_position['purchase_price'] - (price_list[i] * tax)) / current_position['purchase_price']
+					total_percent_gain += profit_percentage
+					current_position = {}
+					# print('sold')
+					#print(price_list[i])
+					if profit_percentage > 0:
+						correct_moves += 1
+					returns.append(profit_percentage)
+		except KeyError:
+			pass
 
-print(check_to_sell(df))
+	try:
+		response = {'total_percent_gain':total_percent_gain,'correct_moves':correct_moves,'moves':moves,
+					'correct_percentage':float(correct_moves/moves),
+					'gain_per_trade':total_percent_gain / moves, 'sharpe':statistics.mean(returns) / statistics.stdev(returns)}
+	except:
+		response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
+				'correct_percentage':0,
+				'gain_per_trade':0, 'sharpe':0}
+	return(response)
 
+
+intervals_to_check = [
+						[420],
+						[360],
+						[120],
+						[60],
+						[30],
+						[10],
+						[5],
+						[360,120,60,30,10,5],
+						[120,60,30,10,5],
+						[30,10,5],
+						[10,5],
+						[120,60,30,10],
+						[60,30,10],
+						[30,10],
+						[10],
+						[5]
+					 ]
+
+df = df.tail(1000000)
+test = full_backtest(df,0,5,intervals_to_check)
+print(test)
 
