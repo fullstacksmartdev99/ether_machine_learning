@@ -162,7 +162,7 @@ def full_backtest(data,tax,back_test_interval,intervals_to_check):
 	return(response)
 
 
-intervals_to_check = [
+intervals_to_check_LIST = [
 						[420],
 						[360],
 						[120],
@@ -182,6 +182,12 @@ intervals_to_check = [
 					 ]
 
 df = df.tail(1000000)
-test = full_backtest(df,0,5,intervals_to_check)
-print(test)
+
+best = {'sharpe':0}
+
+for intervals_to_check in intervals_to_check_LIST:
+	test = full_backtest(df,0,5,intervals_to_check)
+	print(test)
+	if test['sharpe'] > best['sharpe']:
+		best = test
 
