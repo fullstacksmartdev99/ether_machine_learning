@@ -4,9 +4,10 @@ import statistics
 import get_ml_supertrend
 import time
 import supertrend
+import csv
 
 df = pd.read_parquet('ETH-USDT.parquet')
-print(df)
+#print(df)
 #df = df.tail(365*24*60)
 
 taxes = 0.000
@@ -118,6 +119,12 @@ def should_I_buy(buy_interval, current_data):
 	return(signal)
 
 def full_backtest(data,tax,back_test_interval,intervals_to_check):
+	account_value = [1000000]
+	dates = []
+	date_list = data.index.values.tolist()
+	dates.append(date_list[0])
+
+	account_amount = 1000000
 	current_position = {}
 	total_percent_gain = 0.0
 	moves = 0
@@ -141,6 +148,9 @@ def full_backtest(data,tax,back_test_interval,intervals_to_check):
 			elif current_position != {}:
 				if should_I_sell(current_test_set,0.0,intervals_to_check):
 					profit_percentage = (price_list[i] - current_position['purchase_price'] - (price_list[i] * tax)) / current_position['purchase_price']
+					account_amount = account_amount * (1+profit_percentage)
+					account_value.append(account_amount)
+					dates.append(date_list[i])
 					total_percent_gain += profit_percentage
 					current_position = {}
 					# print('sold')
@@ -159,7 +169,7 @@ def full_backtest(data,tax,back_test_interval,intervals_to_check):
 		response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
 				'correct_percentage':0,
 				'gain_per_trade':0, 'sharpe':0}
-	return(response)
+	return(response,account_value,dates)
 
 
 intervals_to_check_LIST = [
@@ -181,14 +191,21 @@ intervals_to_check_LIST = [
 						[5]
 					 ]
 
-df = df.tail(1000000)
+df = df.tail(10000000)
 
 best = {'sharpe':0}
 
-for intervals_to_check in intervals_to_check_LIST:
-	test = full_backtest(df,0,5,intervals_to_check)
-	print(intervals_to_check)
-	print(test)
-	if test['sharpe'] > best['sharpe']:
-		best = test
+test, account_value, dates = full_backtest(df,0,5,[360,120,60,30,10,5])
+
+with open('two_year_balance.csv', 'w',) as f:
+	wr = csv.writer(f)
+	for i in range(0,len(account_value)):
+		wr.writerow([dates[i],account_value[i]])
+
+# for intervals_to_check in intervals_to_check_LIST:
+# 	test = full_backtest(df,0,5,intervals_to_check)
+# 	print(intervals_to_check)
+# 	print(test)
+# 	if test['sharpe'] > best['sharpe']:
+# 		best = test
 
