@@ -4,7 +4,12 @@ import indicators
 
 # df = pd.read_parquet('ETH-USDT.parquet').tail(100000)
 
-def should_I_sell(df,interval, timeperiod=14,fastk_period=14,fastd_period=3,RSI_sell_level=85):
+def should_I_sell(df,sell_settings):
+	interval = sell_settings['interval']
+	timeperiod=sell_settings['timeperiod']
+	fastk_period=sell_settings['fastk_period']
+	fastd_period=sell_settings['fastd_period']
+	RSI_sell_level=sell_settings['RSI_sell_level']
 	df = df[0::int(interval)]
 	should_I_sell = False
 	price_list = df['close'].tolist()

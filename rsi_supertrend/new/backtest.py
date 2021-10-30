@@ -20,16 +20,12 @@ def back_test(data,tax,back_test_interval,buy_settings,sell_settings):
 	movement_dollars = []
 	last_account_value = 1000000
 
-	dates = []
-	date_list = data.index.values.tolist()
-	dates.append(date_list[0])
-
 	price_list = data['open'].tolist()
 	for i in tqdm.tqdm(range(max_len,len(data),back_test_interval)):
 		current_test_set = data[i-(max_len):i]
 		try:
 			if current_position == {}:
-				if buy_function.should_I_buy(current_test_set,buy_settings,sell_settings) and sell_function.should_I_sell(current_test_set, sell_settings) == False:
+				if buy_function.should_I_buy(current_test_set,buy_settings) and sell_function.should_I_sell(current_test_set, sell_settings) == False:
 					current_position = {'i':i,'purchase_price':price_list[i]}
 					#print('bought')
 					moves += 1
@@ -46,10 +42,9 @@ def back_test(data,tax,back_test_interval,buy_settings,sell_settings):
 						correct_moves += 1
 					returns.append(profit_percentage)
 					#print(profit_percentage)
-			account_value_list.append(account_value)
-			dates.append(date_list[i])
-			account_movement_list.append(1-((account_value-last_account_value)/last_account_value))
-			movement_dollars.append((account_value-last_account_value))
+		account_value_list.append(account_value)
+		account_movement_list.append(1-((account_value-last_account_value)/last_account_value))
+		movement_dollars.append((account_value-last_account_value))
 
 		except KeyError:
 			pass
@@ -67,10 +62,10 @@ def back_test(data,tax,back_test_interval,buy_settings,sell_settings):
 		response = {'total_percent_gain':total_percent_gain,'correct_moves':correct_moves,'moves':moves,
 					'correct_percentage':float(correct_moves/moves),
 					'gain_per_trade':total_percent_gain / moves, 'sharpe':statistics.mean(account_movement_list) / statistics.stdev(account_movement_list),
-					'profit_ratio': profit_ratio, 'account_value_list':account_value_list, 'dates':dates
+					'profit_ratio': profit_ratio, 'account_value_list':account_value_list 
 					}
 	except:
 		response = {'total_percent_gain':0,'correct_moves':0,'moves':0,
 					'correct_percentage':0,
-					'gain_per_trade':0, 'sharpe':0,'profit_ratio':0,'account_value_list':[],'dates':[]}
+					'gain_per_trade':0, 'sharpe':0}
 	return(response)
